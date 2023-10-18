@@ -1,0 +1,5 @@
+ya_disk_token.md
+/.mypy_cache
+/venv
+/__pycache__
+configuration.py
