@@ -1,7 +1,4 @@
 from configuration import VK_TOKEN
-import time
-import json
-import os
 import requests  # type: ignore
 import pprint
 
@@ -79,9 +76,8 @@ class VKAPIclient:
             info_dict = {"size": item["sizes"][-5]["type"]}
             info_dict["file_name"] = f"{likes}.jpg"
             photos_info_lst.append(info_dict)
-            pp.pprint(photos_info_lst)
-
-            return photos_info_lst
+        pp.pprint(photos_info_lst)
+        return photos_info_lst
 
     def get_photos_urls(self):
         profile_photos = self.get_profile_photos()
@@ -91,12 +87,12 @@ class VKAPIclient:
             for size in photo["sizes"]:
                 if size["type"] == target_photo_size:
                     photos_urls_lst.append(size["url"])
-        print(photos_urls_lst)
+        pp.pprint(photos_urls_lst)
         return photos_urls_lst
 
 
 if __name__ == "__main__":
     vk_client = VKAPIclient(token, 827020295)
     vk_client.user_info()
-    # vk_client.get_photos_urls()
+    vk_client.get_photos_urls()
     vk_client.get_photos_info()
