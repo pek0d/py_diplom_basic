@@ -39,8 +39,12 @@ class VKAPIclient:
         except IndexError:
             print("Пользователя с таким screen_name не существует")
             return self.user_id
+        else:
+            self.user_id = response.json()["response"][0]["id"]
+        return self.user_id
 
     def get_profile_photos(self):
+        profile_id = self.user_id
         count_photos = input(
             "Сколько фото из профиля хотите сохранить?: (По умолчанию 5)"
         )
@@ -49,12 +53,12 @@ class VKAPIclient:
                 count_photos = 5
             count_photos = int(count_photos)
         except ValueError:
-            print("Некорректное значение")
+            print("Некорректное значение, нужно ввести число. Попробуйте еще раз")
             return self.get_profile_photos()
         params = self.common_params()
         params.update(
             {
-                "owner_id": self.user_id,
+                "owner_id": profile_id,
                 "album_id": "profile",
                 "photo_sizes": "1",
                 "extended": "1",
@@ -64,11 +68,12 @@ class VKAPIclient:
         response = requests.get(self._build_url("photos.get"), params=params)
         # with open("get_photos.json", "w") as f:
         #     json.dump(response.json(), f, indent=2)
-        return response.json()
+        self.photos_data = response.json()
+        return self.photos_data
 
     def get_photos_info(self):
-        response = self.get_profile_photos()
-        items_response = response["response"]["items"]
+        data = self.photos_data
+        items_response = data["response"]["items"]
         photos_info_lst = []
         info_dict = {}
         for item in items_response:
@@ -76,7 +81,6 @@ class VKAPIclient:
             info_dict = {"size": item["sizes"][-5]["type"]}
             info_dict["file_name"] = f"{likes}.jpg"
             photos_info_lst.append(info_dict)
-        pp.pprint(photos_info_lst)
         return photos_info_lst
 
     def get_photos_urls(self):
@@ -94,5 +98,5 @@ class VKAPIclient:
 if __name__ == "__main__":
     vk_client = VKAPIclient(token, 827020295)
     vk_client.user_info()
-    vk_client.get_photos_urls()
     vk_client.get_photos_info()
+    # vk_client.get_photos_urls()
