@@ -1,19 +1,14 @@
+from configuration import VK_TOKEN
+import time
+import json
+import os
 import requests  # type: ignore
 import pprint
-import os
-from urllib.parse import urlencode
-import json
-from configuration import TOKEN
 
-# Запрос id пользователя (827020295)
-vk_user_id_input = input("Введите id пользователя VK: ")
-try:
-    vk_user_id = int(vk_user_id_input)
-except TypeError:
-    print("нужно ввести только цифры")
+pp = pprint.PrettyPrinter(indent=2)
 
 
-token = TOKEN
+token = VK_TOKEN
 
 
 class VKAPIclient:
@@ -29,45 +24,79 @@ class VKAPIclient:
     def common_params(self):
         return {"access_token": self.access_token, "v": "5.154"}
 
-    def get_status(self):
+    def user_info(self):
+        user_url = f"{self.api_base_url}/users.get"
+        user_id_input = input(
+            "Введите id пользователя VK или его screen_name: ")
+        if user_id_input == "":
+            user_id_input = self.user_id
         params = self.common_params()
-        params.update({"user_id": self.user_id})
-        r = requests.get(self._build_url("status.get"), params=params)
-        return r.json().get("response", {}).get("text")
-
-    def set_status(self, new_status):
-        params = self.common_params()
-        params.update({"user_id": self.user_id, "text": new_status})
-        r = requests.get(self._build_url("status.set"), params=params)
-        r.raise_for_status()
-
-    def replace_status(self, target, replace_string):
-        status = self.get_status()
-        new_status = status.replace(target, replace_string)
-        self.set_status(new_status)
+        params.update({"user_ids": user_id_input, "fields": "screen_name"})
+        response = requests.get(user_url, params=params)
+        if "error" in response.json().keys():
+            error_message = response.json()["error"]["error_msg"]
+            print(f"Произошла ошибка: {error_message}")
+            return self.user_id
+        try:
+            self.screen_name = response.json()["response"][0]["screen_name"]
+        except IndexError:
+            print("Пользователя с таким screen_name не существует")
+            return self.user_id
 
     def get_profile_photos(self):
+        count_photos = input(
+            "Сколько фото из профиля хотите сохранить?: (По умолчанию 5)"
+        )
+        try:
+            if count_photos == "":
+                count_photos = 5
+            count_photos = int(count_photos)
+        except ValueError:
+            print("Некорректное значение")
+            return self.get_profile_photos()
         params = self.common_params()
         params.update(
-            {"owner_id": self.user_id, "album_id": "profile", "photo_sizes": "1"}
+            {
+                "owner_id": self.user_id,
+                "album_id": "profile",
+                "photo_sizes": "1",
+                "extended": "1",
+                "count": count_photos,
+            }
         )
-        r = requests.get(self._build_url("photos.get"), params=params)
-        return r.json()
+        response = requests.get(self._build_url("photos.get"), params=params)
+        # with open("get_photos.json", "w") as f:
+        #     json.dump(response.json(), f, indent=2)
+        return response.json()
 
-    def get_max_photo_size_url(self):
+    def get_photos_info(self):
+        response = self.get_profile_photos()
+        items_response = response["response"]["items"]
+        photos_info_lst = []
+        info_dict = {}
+        for item in items_response:
+            likes = item["likes"]["count"]
+            info_dict = {"size": item["sizes"][-5]["type"]}
+            info_dict["file_name"] = f"{likes}.jpg"
+            photos_info_lst.append(info_dict)
+            pp.pprint(photos_info_lst)
+
+            return photos_info_lst
+
+    def get_photos_urls(self):
         profile_photos = self.get_profile_photos()
-        target_size = "o"
+        target_photo_size = "z"
+        photos_urls_lst = []
         for photo in profile_photos["response"]["items"]:
-            for photo_size in photo["sizes"]:
-                if photo_size["type"] == target_size:
-                    photo_size["url"]
-                return photo_size
+            for size in photo["sizes"]:
+                if size["type"] == target_photo_size:
+                    photos_urls_lst.append(size["url"])
+        print(photos_urls_lst)
+        return photos_urls_lst
 
 
 if __name__ == "__main__":
     vk_client = VKAPIclient(token, 827020295)
-    # pprint.pprint(vk_client.get_status())
-    # vk_client.replace_status("Hello", "World")
-    # photos_info = vk_client.get_profile_photos()
-    photo_size = vk_client.get_max_photo_size_url()
-    pprint.pprint(photo_size)
+    vk_client.user_info()
+    # vk_client.get_photos_urls()
+    vk_client.get_photos_info()
