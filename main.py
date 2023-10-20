@@ -2,6 +2,7 @@ from configuration import VK_TOKEN
 import requests  # type: ignore
 import pprint
 import json
+import time
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -49,7 +50,7 @@ class VKAPIclient:
         """Получить данные о фотографиях профиля"""
         profile_id = self.user_id
         count_photos = input(
-            "Сколько фото из альбома аватарок профиля Вы хотите сохранить?\n(По умолчанию 5): "
+            "Сколько фото из аватарок профиля Вы хотите сохранить?(По умолчанию 5): "
         )
         try:
             if count_photos == "":
@@ -57,7 +58,6 @@ class VKAPIclient:
             count_photos = int(count_photos)
         except ValueError:
             print("Некорректное значение, нужно ввести число. Попробуйте еще раз")
-            return self.get_profile_photos_data()
         params = self.common_params()
         params.update(
             {
@@ -76,24 +76,42 @@ class VKAPIclient:
             items_response = response["response"]["items"]
         except KeyError:
             print("Доступ к альбому данного пользователя закрыт")
-            return self.get_profile_info()
-        photos_info_lst = []
-        photos_urls_lst = []
-        info_dict = {}
-        target_photo_size = "z"
-        for item in items_response:
-            likes = item["likes"]["count"]
-            info_dict["size"] = item["sizes"][0]["type"]
-            info_dict["file_name"] = f"{likes}.jpg"
-            photos_info_lst.append(info_dict)
-            for size in item["sizes"]:
-                if size["type"] == target_photo_size:
-                    photos_urls_lst.append(size["url"])
+        else:
+            photos_info_lst = []
+            photos_urls_lst = []
+            info_dict = {}
+            target_photo_size = "z"
+            likes_count_lst = []
+            repeated_likes_count_lst = []
+            items_response = response["response"]["items"]
 
-        pp.pprint(photos_info_lst)
-        pp.pprint(photos_urls_lst)
+            for like in items_response:
+                likes_count_lst.append(like["likes"]["count"])
+            for like in likes_count_lst:
+                if likes_count_lst.count(like) > 1:
+                    repeated_likes_count_lst.append(like)
 
-        return photos_info_lst, photos_urls_lst
+            for item in items_response:
+                like = item["likes"]["count"]
+                photo_upload_date = time.strftime(
+                    "%Y-%m-%d", time.gmtime(item["date"]))
+                info_dict["file_name"] = f"{like}_{photo_upload_date}.jpg"
+                info_dict["size"] = item["sizes"][-1]["type"]
+                if like in repeated_likes_count_lst:
+                    info_dict["file"] = f"{like}_{photo_upload_date}.jpg"
+                    photos_info_lst.append(info_dict)
+                else:
+                    info_dict["file"] = f"{like}.jpg"
+                    photos_info_lst.append(info_dict)
+                with open("photos_info.json", "w") as f:
+                    json.dump(photos_info_lst, f, indent=2)
+            for item in items_response:
+                for photo_size in item["sizes"]:
+                    if photo_size["type"] == target_photo_size:
+                        photos_urls_lst.append(photo_size["url"])
+
+            pp.pprint(photos_urls_lst)
+            return photos_urls_lst
 
 
 if __name__ == "__main__":
