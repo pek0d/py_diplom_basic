@@ -34,20 +34,22 @@ class VKAPIclient:
         if "error" in response.json().keys():
             error_message = response.json()["error"]["error_msg"]
             print(f"Произошла ошибка: {error_message}")
-            return self.user_id
-        try:
-            self.screen_name = response.json()["response"][0]["screen_name"]
-        except IndexError:
-            print("Пользователя с таким screen_name не существует")
+            self.user_id = None
             return self.user_id
         else:
             self.user_id = response.json()["response"][0]["id"]
-        return self.user_id
+            if "screen_name" in response.json()["response"][0].keys():
+                self.screen_name = response.json(
+                )["response"][0]["screen_name"]
+            else:
+                print(f'Короткого имени пользователя "{user_id_input}" нет.')
+                return self.user_id
 
     def get_profile_photos_data(self):
+        """Получить данные о фотографиях профиля"""
         profile_id = self.user_id
         count_photos = input(
-            "Сколько фото из профиля хотите сохранить?: (По умолчанию 5)"
+            "Сколько фото из альбома аватарок профиля Вы хотите сохранить?\n(По умолчанию 5): "
         )
         try:
             if count_photos == "":
@@ -66,51 +68,35 @@ class VKAPIclient:
                 "count": count_photos,
             }
         )
-        response = requests.get(self._build_url("photos.get"), params=params)
-        with open("get_photos.json", "w") as f:
-            json.dump(response.json(), f, indent=2)
-        photos_data = response.json()
-        self.photos_data = photos_data
-        return self.photos_data
-
-    def get_photos_info(self):
-        data = self.photos_data
-        items_response = data["response"]["items"]
+        response = requests.get(self._build_url(
+            "photos.get"), params=params).json()
+        # with open("get_photos.json", "w") as f:
+        #     json.dump(response.json(), f, indent=2)
+        try:
+            items_response = response["response"]["items"]
+        except KeyError:
+            print("Доступ к альбому данного пользователя закрыт")
+            return self.get_profile_info()
         photos_info_lst = []
+        photos_urls_lst = []
         info_dict = {}
+        target_photo_size = "z"
         for item in items_response:
             likes = item["likes"]["count"]
             info_dict["size"] = item["sizes"][0]["type"]
             info_dict["file_name"] = f"{likes}.jpg"
             photos_info_lst.append(info_dict)
-        self.photos_info_lst = photos_info_lst
-
-        target_photo_size = "z"
-        photos_urls_lst = []
-        for photo in items_response:
-            for size in photo["sizes"]:
+            for size in item["sizes"]:
                 if size["type"] == target_photo_size:
                     photos_urls_lst.append(size["url"])
-        self.photos_urls_lst = photos_urls_lst
+
+        pp.pprint(photos_info_lst)
         pp.pprint(photos_urls_lst)
 
-        return self.photos_info_lst, self.photos_urls_lst
-
-    # def get_photos_urls(self):
-    #     profile_photos = self.get_profile_photos_data()
-    #     target_photo_size = "z"
-    #     photos_urls_lst = []
-    #     for photo in profile_photos["response"]["items"]:
-    #         for size in photo["sizes"]:
-    #             if size["type"] == target_photo_size:
-    #                 photos_urls_lst.append(size["url"])
-    #     pp.pprint(photos_urls_lst)
-    #     return photos_urls_lst
-    #
+        return photos_info_lst, photos_urls_lst
 
 
 if __name__ == "__main__":
     vk_client = VKAPIclient(token, 827020295)
     vk_client.get_profile_info()
     vk_client.get_profile_photos_data()
-    vk_client.get_photos_info()
