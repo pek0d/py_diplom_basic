@@ -95,22 +95,25 @@ class VKAPIclient:
                 like = item["likes"]["count"]
                 photo_upload_date = time.strftime(
                     "%Y-%m-%d", time.gmtime(item["date"]))
-                info_dict["file_name"] = f"{like}_{photo_upload_date}.jpg"
-                info_dict["size"] = item["sizes"][-1]["type"]
                 if like in repeated_likes_count_lst:
-                    info_dict["file"] = f"{like}_{photo_upload_date}.jpg"
+                    info_dict["file_name"] = f"{like}_{photo_upload_date}.jpg"
                     photos_info_lst.append(info_dict)
                 else:
-                    info_dict["file"] = f"{like}.jpg"
+                    info_dict["file_name"] = f"{like}.jpg"
                     photos_info_lst.append(info_dict)
-                with open("photos_info.json", "w") as f:
-                    json.dump(photos_info_lst, f, indent=2)
+                info_dict["size"] = item["sizes"][-1]["type"]
+                pp.pprint(info_dict)
+
+            # Сохранение полученных данных в файл
+            with open("photos_info.json", "w") as f:
+                json.dump(photos_info_lst, f, indent=2)
+
+            # получение ссылок на фотографии
             for item in items_response:
                 for photo_size in item["sizes"]:
                     if photo_size["type"] == target_photo_size:
                         photos_urls_lst.append(photo_size["url"])
 
-            pp.pprint(photos_urls_lst)
             return photos_urls_lst
 
 
