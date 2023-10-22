@@ -69,11 +69,24 @@ class YA_disk:
         else:
             print(response.json()["message"])
 
+    @pysnooper.snoop()
+    def upload_from_json(self):
+        """Загрузить на Диск по ссылкам из json"""
+        with open("for_upload_to_yadisk.json") as f:
+            data = json.load(f)
+            for photo_url in data:
+                self.upload_ext_url(photo_url["file_name"], photo_url["url"])
+
 
 if __name__ == "__main__":
     ya = YA_disk(token)
     ya.create_upload_folder()
-    ya.upload_ext_url(
-        "test_pic.jpg",
-        "https://bmwguide.ru/wp-content/uploads/2016/07/bmw-at-2016-consorso-d-eleganza-bmw-2002-hommage-13.jpg",
-    )
+    # ya.upload_ext_url(
+    #     "test_pic.jpg",
+    #     "https://bmwguide.ru/wp-content/uploads/2016/07/bmw-at-2016-consorso-d-eleganza-bmw-2002-hommage-13.jpg",
+    # )
+    # ya.upload_ext_url(
+    #     "peqqod.jpg",
+    #     "https://sun9-71.userapi.com/impg/QTDzCkn-PB52Nt-ZPGi8t6LTqBPphQRABjiE_Q/LYfVoc76twg.jpg?size=1024x819&quality=95&sign=b870aa2dfc821f4f2b9a2f3ae76155b3&c_uniq_tag=jzcIkvSKc_anAi8oV35XUjEqhyl_x3HxNUfdu_3ybZE&type=album",
+    # )
+    ya.upload_from_json()

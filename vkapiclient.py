@@ -3,13 +3,15 @@ import requests  # type: ignore
 import pprint
 import json
 import time
+import pysnooper
+
 
 pp = pprint.PrettyPrinter(indent=2)
 
 
 token = VK_TOKEN
 
-# my id 82702029
+# my id 827020295
 
 
 class VKAPIclient:
@@ -50,6 +52,7 @@ class VKAPIclient:
                 print(f'Короткого имени пользователя "{user_id_input}" нет.')
                 return self.user_id
 
+    @pysnooper.snoop()
     def get_profile_photos_data(self):
         """Получить данные о фотографиях профиля"""
 
@@ -95,6 +98,7 @@ class VKAPIclient:
             # проебежка по лайкам
             for item in items_response:
                 like = item["likes"]["count"]
+                like = str(like)
 
                 photo_upload_date = time.strftime(
                     "%Y-%m-%d", time.gmtime(item["date"]))
@@ -125,6 +129,9 @@ class VKAPIclient:
                 # запись в json
                 with open("photos_info.json", "w") as f:
                     json.dump(dump, f, indent=2)
+                # запись в файл для яндексДиска
+                with open("for_upload_to_yadisk.json", "w") as f:
+                    json.dump(yadisk, f, indent=2)
 
         return dump, yadisk
 
