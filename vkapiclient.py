@@ -21,9 +21,11 @@ class VKAPIclient:
         return f"{self.api_base_url}/{api_method}"
 
     def common_params(self):
+        """Подготовка параметров API"""
         return {"access_token": self.access_token, "v": "5.154"}
 
     def get_profile_info(self):
+        """Получить данные о профиле пользователя"""
         user_url = f"{self.api_base_url}/users.get"
         user_id_input = input(
             "Введите id пользователя VK или его screen_name: ")
