@@ -1,4 +1,3 @@
-# тест API яндекс-диск
 from configuration import YA_TOKEN
 import requests  # type: ignore
 import pprint
@@ -51,7 +50,9 @@ class YA_disk:
     @pysnooper.snoop()
     def upload_ext_url(self, file_name, link2pic):
         """Загрузить файл на диск с указанной (внешеней) ссылкой"""
+        # формирование ссылки для запроса
         url_for_upload = self._build_url("resources/upload")
+        # объявление имени папки из ранее заданного имени
         folder = f"{self.dir_name}"
         params = {"path": f"disk:/{folder}/{file_name}", "url": link2pic}
         encoded_params = urlencode(params)
@@ -59,7 +60,7 @@ class YA_disk:
             url_for_upload, headers=self.headers, params=encoded_params
         )
         if response.status_code == 202:
-            print("Началась загрузка")
+            print("Началась загрузка файла в папку на ЯндексДиск")
         else:
             print(response.json()["message"])
 
