@@ -22,6 +22,7 @@ class YA_disk:
         self.headers = {"Authorization": token}
 
     def _build_url(self, api_method):
+        """Собрать ссылку на API"""
         return f"{self.api_base_url}/{api_method}"
 
     def _write_responses(self, response):
@@ -43,7 +44,8 @@ class YA_disk:
             print(response.json()["message"])
 
         response_info = requests.get(url, headers=self.headers, params=params)
-        pp.pprint(response_info.json())
+        self._write_responses(response_info)
+
         return self.dir_name
 
     @pysnooper.snoop()

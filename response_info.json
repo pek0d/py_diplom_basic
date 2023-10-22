@@ -1,5 +1,22 @@
 {
-  "message": "По указанному пути \"2/\" уже существует папка с таким именем.",
-  "description": "Specified path \"2/\" points to existent directory.",
-  "error": "DiskPathPointsToExistentDirectoryError"
+  "_embedded": {
+    "sort": "",
+    "items": [],
+    "limit": 20,
+    "offset": 0,
+    "path": "disk:/2",
+    "total": 0
+  },
+  "name": "2",
+  "exif": {},
+  "resource_id": "222880189:3f7ab19a93a81ef5c8a27c2cb783978daa098b4a9caea5f433ccf7825bef4672",
+  "created": "2023-10-22T13:53:55+00:00",
+  "modified": "2023-10-22T13:53:55+00:00",
+  "path": "disk:/2",
+  "comment_ids": {
+    "private_resource": "222880189:3f7ab19a93a81ef5c8a27c2cb783978daa098b4a9caea5f433ccf7825bef4672",
+    "public_resource": "222880189:3f7ab19a93a81ef5c8a27c2cb783978daa098b4a9caea5f433ccf7825bef4672"
+  },
+  "type": "dir",
+  "revision": 1697982835867775
 }
