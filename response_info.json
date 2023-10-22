@@ -4,19 +4,19 @@
     "items": [],
     "limit": 20,
     "offset": 0,
-    "path": "disk:/2",
+    "path": "disk:/1",
     "total": 0
   },
-  "name": "2",
+  "name": "1",
   "exif": {},
-  "resource_id": "222880189:3f7ab19a93a81ef5c8a27c2cb783978daa098b4a9caea5f433ccf7825bef4672",
-  "created": "2023-10-22T13:53:55+00:00",
-  "modified": "2023-10-22T13:53:55+00:00",
-  "path": "disk:/2",
+  "resource_id": "222880189:65c46987bc80985d5e04f982175d579925c24059714bea86e6be73b26a5988d2",
+  "created": "2023-10-22T14:17:15+00:00",
+  "modified": "2023-10-22T14:17:15+00:00",
+  "path": "disk:/1",
   "comment_ids": {
-    "private_resource": "222880189:3f7ab19a93a81ef5c8a27c2cb783978daa098b4a9caea5f433ccf7825bef4672",
-    "public_resource": "222880189:3f7ab19a93a81ef5c8a27c2cb783978daa098b4a9caea5f433ccf7825bef4672"
+    "private_resource": "222880189:65c46987bc80985d5e04f982175d579925c24059714bea86e6be73b26a5988d2",
+    "public_resource": "222880189:65c46987bc80985d5e04f982175d579925c24059714bea86e6be73b26a5988d2"
   },
   "type": "dir",
-  "revision": 1697982835867775
+  "revision": 1697984235154036
 }

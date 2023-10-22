@@ -55,7 +55,7 @@ class YA_disk:
         folder = f"{self.dir_name}"
         params = {"path": f"disk:/{folder}/{file_name}", "url": link2pic}
         encoded_params = urlencode(params)
-        response = requests.put(
+        response = requests.post(
             url_for_upload, headers=self.headers, params=encoded_params
         )
         if response.status_code == 202:
