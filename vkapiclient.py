@@ -9,6 +9,8 @@ pp = pprint.PrettyPrinter(indent=2)
 
 token = VK_TOKEN
 
+# my id 82702029
+
 
 class VKAPIclient:
     api_base_url = "https://api.vk.com/method"
@@ -55,11 +57,13 @@ class VKAPIclient:
         dump = []
         # список для загрузки в яндекс диск
         yadisk = []
+        # список для контроля повторных количеств лайков
         uniq_name = []
 
         profile_id = self.user_id
+        # ввод количества фото
         count_photos = input(
-            "Сколько фото из аватарок профиля Вы хотите сохранить?(По умолчанию 5): "
+            "Сколько (По умолчанию 5) фото из аватарок профиля Вы хотите сохранить?: "
         )
         # проверка на корректность ввода
         try:
@@ -88,12 +92,14 @@ class VKAPIclient:
         else:
             items_response = response["response"]["items"]
 
+            # проебежка по лайкам
             for item in items_response:
                 like = item["likes"]["count"]
 
                 photo_upload_date = time.strftime(
                     "%Y-%m-%d", time.gmtime(item["date"]))
 
+                # реализация условия для создания имени фото
                 if like in uniq_name:
                     name = f"{like}_{photo_upload_date}.jpg"
                 else:
@@ -102,20 +108,23 @@ class VKAPIclient:
                 if like not in uniq_name:
                     uniq_name.append(like)
 
+                # формирование ссылки для запроса фото
                 max_photo_url, size = self.max_size_photo(item["sizes"])
 
+                # формирование словаря для записи в список копий фото
                 data_dump = {"file_name": name, "size": size}
 
+                # формирование словаря для загрузки в яндекс диск
                 data_yadisk = {"file_name": name,
                                "size": size, "url": max_photo_url}
 
+                # наполнение списков
                 dump.append(data_dump)
                 yadisk.append(data_yadisk)
 
+                # запись в json
                 with open("photos_info.json", "w") as f:
                     json.dump(dump, f, indent=2)
-                # with open("photos_yadisk.json", "w") as f:
-                #     json.dump(yadisk, f, indent=2)
 
         return dump, yadisk
 
