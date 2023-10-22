@@ -1,3 +1,4 @@
 requests
 enlighten
 urllib3
+pysnooper

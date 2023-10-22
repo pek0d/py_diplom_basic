@@ -9,14 +9,14 @@
   },
   "name": "1",
   "exif": {},
-  "resource_id": "222880189:65c46987bc80985d5e04f982175d579925c24059714bea86e6be73b26a5988d2",
-  "created": "2023-10-22T14:17:15+00:00",
-  "modified": "2023-10-22T14:17:15+00:00",
+  "resource_id": "222880189:f489b4a9020d642fa13d89ec60eb2740bfd8f5f6573363f5337c88d7c3f09a60",
+  "created": "2023-10-22T19:11:00+00:00",
+  "modified": "2023-10-22T19:11:00+00:00",
   "path": "disk:/1",
   "comment_ids": {
-    "private_resource": "222880189:65c46987bc80985d5e04f982175d579925c24059714bea86e6be73b26a5988d2",
-    "public_resource": "222880189:65c46987bc80985d5e04f982175d579925c24059714bea86e6be73b26a5988d2"
+    "private_resource": "222880189:f489b4a9020d642fa13d89ec60eb2740bfd8f5f6573363f5337c88d7c3f09a60",
+    "public_resource": "222880189:f489b4a9020d642fa13d89ec60eb2740bfd8f5f6573363f5337c88d7c3f09a60"
   },
   "type": "dir",
-  "revision": 1697984235154036
+  "revision": 1698001860834893
 }
