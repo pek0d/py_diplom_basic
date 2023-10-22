@@ -3,8 +3,9 @@ import requests  # type: ignore
 import pprint
 import pysnooper  # type: ignore
 import json
+import time
 from urllib.parse import urlencode
-
+from enlighten import get_manager
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -66,6 +67,13 @@ class YA_disk:
         # проверка статуса запроса
         if response.status_code == 202:
             print("Началась загрузка файла в папку на ЯндексДиск")
+            with get_manager() as manager:
+                with manager.counter(
+                    total=100, desc=f"Загрузка {file_name}", unit="%"
+                ) as pbar:
+                    for _ in range(100):
+                        time.sleep(0.05)
+                        pbar.update()
         else:
             print(response.json()["message"])
 
