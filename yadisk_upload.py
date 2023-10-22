@@ -31,26 +31,25 @@ class YA_disk:
     def create_upload_folder(self):
         """Создание папки для загрузки"""
         url = self._build_url("resources")
-        folder_name_input = input("Введите имя папки для загрузки: ")
-        self.dir_name = f"{folder_name_input}/"
-        params = {"path": folder_name_input}
+        folder_name = input("Введите имя папки для загрузки: ")
+        self.dir_name = f"{folder_name}"
+        params = {"path": folder_name}
         response = requests.put(url, headers=self.headers, params=params)
         if response.status_code == 201:
-            print(f"Папка с названием {folder_name_input} создана")
+            print(f"Папка с названием {folder_name} создана")
         else:
             print(response.json()["message"])
 
         return self.dir_name
 
     @pysnooper.snoop()
-    def upload_ext_url(self, url):
+    def upload_ext_url(self, file_name, url):
         """Загрузить файл на диск с указанной (внешеней) ссылкой"""
         url_for_upload = self._build_url("resources/upload")
-        path = self.dir_name
-        params = {"path": path, "url": url}
+        folder = f"{self.dir_name}/"
+        params = {"path": f"{folder}{file_name}", "url": url}
         response = requests.put(
             url_for_upload, headers=self.headers, params=params)
-        pp.pprint(response.json())
         if response.status_code == 202:
             print("Началась загрузка")
         else:
@@ -97,5 +96,5 @@ if __name__ == "__main__":
     ya = YA_disk(token)
     ya.create_upload_folder()
     ya.upload_ext_url(
-        "https://sun9-23.userapi.com/impf/c210/v210001/6/53_VwoACy4I.jpg?size=2560x1913&quality=96&sign=c55f340348a35dd86542875a57ad8537&c_uniq_tag=RvD_7O5cznGnLGO2duPrnqHQrL-0KVHqGZMBe4FtTqI&type=album"
+        "722280.jpg", "https://sun9-23.userapi.com/impf/c210/v210001/6/53_VwoACy4I.jpg"
     )
