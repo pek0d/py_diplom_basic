@@ -4,6 +4,8 @@ import requests  # type: ignore
 import pprint
 import pysnooper  # type: ignore
 import json
+from urllib.parse import urlencode
+import urllib3
 import enlighten
 
 
@@ -40,14 +42,17 @@ class YA_disk:
         else:
             print(response.json()["message"])
 
+        response_info = requests.get(url, headers=self.headers, params=params)
+        pp.pprint(response_info.json())
         return self.dir_name
 
     @pysnooper.snoop()
-    def upload_ext_url(self, file_name, url):
+    def upload_ext_url(self, file_name, link2pic):
         """Загрузить файл на диск с указанной (внешеней) ссылкой"""
         url_for_upload = self._build_url("resources/upload")
         folder = f"{self.dir_name}/"
-        params = {"path": f"{folder}{file_name}", "url": url}
+        # encdoded_url = urlencode(link2pic)
+        params = {"path": f"{folder}{file_name}", "url": link2pic}
         response = requests.put(
             url_for_upload, headers=self.headers, params=params)
         if response.status_code == 202:
@@ -96,5 +101,6 @@ if __name__ == "__main__":
     ya = YA_disk(token)
     ya.create_upload_folder()
     ya.upload_ext_url(
-        "722280.jpg", "https://sun9-23.userapi.com/impf/c210/v210001/6/53_VwoACy4I.jpg"
+        "722280.jpg",
+        "https://bmwguide.ru/wp-content/uploads/2016/07/bmw-at-2016-consorso-d-eleganza-bmw-2002-hommage-13.jpg",
     )
