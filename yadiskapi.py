@@ -4,8 +4,6 @@ import pprint
 import pysnooper  # type: ignore
 import json
 from urllib.parse import urlencode
-import urllib3
-import enlighten
 
 
 pp = pprint.PrettyPrinter(indent=2)
@@ -32,17 +30,22 @@ class YA_disk:
     @pysnooper.snoop()
     def create_upload_folder(self):
         """Создание папки для загрузки"""
+        # формирование ссылки для запроса
         url = self._build_url("resources")
         folder_name = input("Введите имя папки для загрузки: ")
         self.dir_name = f"{folder_name}"
         params = {"path": folder_name}
         response = requests.put(url, headers=self.headers, params=params)
+        # проверка статуса запроса
         if response.status_code == 201:
             print(f"Папка с названием {folder_name} создана")
         else:
             print(response.json()["message"])
 
+        # ответ по состоянию запроса на яндекс диск
         response_info = requests.get(url, headers=self.headers, params=params)
+
+        # для отображения статуса запроса в отдельном файле
         self._write_responses(response_info)
 
         return self.dir_name
@@ -56,49 +59,15 @@ class YA_disk:
         folder = f"{self.dir_name}"
         params = {"path": f"disk:/{folder}/{file_name}", "url": link2pic}
         encoded_params = urlencode(params)
+        # запрос на загрузку c помощью POST
         response = requests.post(
             url_for_upload, headers=self.headers, params=encoded_params
         )
+        # проверка статуса запроса
         if response.status_code == 202:
             print("Началась загрузка файла в папку на ЯндексДиск")
         else:
             print(response.json()["message"])
-
-        # response_status_uploading = requests.get(
-        #     self._build_url("operations") + "/" + response.json()["upload_id"]
-        # )
-        # print(response_status_uploading.json()["status"])
-        #
-        # @pysnooper.snoop()
-        # def get_upload_url(self, file_name):
-        #     """Получить ссылку на загрузку файла"""
-        #     url = self._build_url("resources/upload")
-        #     path = self.dir_name
-        #     params = {"path": f"{path}{file_name}", "overwrite": "true"}
-        #     response = requests.get(url, headers=self.headers, params=params)
-        #     if response.status_code == 200:
-        #         url_for_upload = response.json()["href"]
-        #         print(f"Ссылка для загрузки: {url_for_upload}")
-        #         self.url_for_upload = url_for_upload
-        #         return self.url_for_upload
-        #
-        #     else:
-        #         print(response.json()["message"])
-        #
-        #     # справочно
-        #     self._write_responses(response)
-        #
-        # @pysnooper.snoop()
-        # def upload_file(self, file_name):
-        #     """Загрузить файл на яндекс диск"""
-        #
-        #     href = self.url_for_upload
-        #     response = requests.put(href, data=open(file_name, "rb"))
-        #     response.raise_for_status()
-        #     if response.status_code == 201:
-        #         print("Файл загружен")
-        #     else:
-        #         print(response.json()["message"])
 
 
 if __name__ == "__main__":
