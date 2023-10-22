@@ -50,11 +50,12 @@ class YA_disk:
     def upload_ext_url(self, file_name, link2pic):
         """Загрузить файл на диск с указанной (внешеней) ссылкой"""
         url_for_upload = self._build_url("resources/upload")
-        folder = f"{self.dir_name}/"
-        # encdoded_url = urlencode(link2pic)
-        params = {"path": f"{folder}{file_name}", "url": link2pic}
+        folder = f"{self.dir_name}"
+        params = {"path": f"disk:/{folder}/{file_name}", "url": link2pic}
+        encoded_params = urlencode(params)
         response = requests.put(
-            url_for_upload, headers=self.headers, params=params)
+            url_for_upload, headers=self.headers, params=encoded_params
+        )
         if response.status_code == 202:
             print("Началась загрузка")
         else:
@@ -101,6 +102,6 @@ if __name__ == "__main__":
     ya = YA_disk(token)
     ya.create_upload_folder()
     ya.upload_ext_url(
-        "722280.jpg",
+        "test_pic.jpg",
         "https://bmwguide.ru/wp-content/uploads/2016/07/bmw-at-2016-consorso-d-eleganza-bmw-2002-hommage-13.jpg",
     )
