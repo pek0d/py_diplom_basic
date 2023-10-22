@@ -1,0 +1,5 @@
+{
+  "message": "По указанному пути \"2/\" уже существует папка с таким именем.",
+  "description": "Specified path \"2/\" points to existent directory.",
+  "error": "DiskPathPointsToExistentDirectoryError"
+}

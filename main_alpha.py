@@ -13,9 +13,9 @@ token = VK_TOKEN
 class VKAPIclient:
     api_base_url = "https://api.vk.com/method"
 
-    def __init__(self, token):
+    def __init__(self, token, user_id):
         self.access_token = token
-        # self.user_id = user_id
+        self.user_id = user_id
 
     def _build_url(self, api_method):
         return f"{self.api_base_url}/{api_method}"
@@ -48,18 +48,10 @@ class VKAPIclient:
 
     def get_profile_photos_data(self):
         """Получить данные о фотографиях профиля"""
-
-        # список для записи в json
-        dump = []
-        # список для загрузки в яндекс диск
-        yadisk = []
-        uniq_name = []
-
         profile_id = self.user_id
         count_photos = input(
             "Сколько фото из аватарок профиля Вы хотите сохранить?(По умолчанию 5): "
         )
-        # проверка на корректность ввода
         try:
             if count_photos == "":
                 count_photos = 5
@@ -78,61 +70,58 @@ class VKAPIclient:
         )
         response = requests.get(self._build_url(
             "photos.get"), params=params).json()
-        # проверка на доступ к альбому
+        # with open("get_photos.json", "w") as f:
+        #     json.dump(response.json(), f, indent=2)
         try:
             items_response = response["response"]["items"]
         except KeyError:
             print("Доступ к альбому данного пользователя закрыт")
         else:
+            photos_info_lst = []
+            photos_urls_lst = []
+            info_dict = {}
+            target_photo_size = "z"
+            likes_count_lst = []
+            repeated_likes_count_lst = []
             items_response = response["response"]["items"]
+
+            for like in items_response:
+                likes_count_lst.append(like["likes"]["count"])
+            for like in likes_count_lst:
+                if likes_count_lst.count(like) > 1:
+                    repeated_likes_count_lst.append(like)
 
             for item in items_response:
                 like = item["likes"]["count"]
-
                 photo_upload_date = time.strftime(
                     "%Y-%m-%d", time.gmtime(item["date"]))
 
-                if like in uniq_name:
-                    name = f"{like}_{photo_upload_date}.jpg"
+                if like in repeated_likes_count_lst:
+                    info_dict["file_name"] = f"{like}_{photo_upload_date}.jpg"
+                    photos_info_lst.append(info_dict)
                 else:
-                    name = f"{like}.jpg"
+                    info_dict["file_name"] = f"{like}.jpg"
+                    photos_info_lst.append(info_dict)
 
-                if like not in uniq_name:
-                    uniq_name.append(like)
+                info_dict["size"] = item["sizes"][-1]["type"]
+                photos_info_lst.append(info_dict)
+                # pp.pprint(info_dict)
+                pp.pprint(photos_info_lst)
 
-                max_photo_url, size = self.max_size_photo(item["sizes"])
-
-                data_dump = {"file_name": name, "size": size}
-
-                data_yadisk = {"file_name": name,
-                               "size": size, "url": max_photo_url}
-
-                dump.append(data_dump)
-                yadisk.append(data_yadisk)
-
+                # Сохранение полученных данных в файл
                 with open("photos_info.json", "w") as f:
-                    json.dump(dump, f, indent=2)
-                # with open("photos_yadisk.json", "w") as f:
-                #     json.dump(yadisk, f, indent=2)
+                    json.dump(photos_info_lst, f, indent=2)
 
-        return dump, yadisk
+            # получение ссылок на фотографии
+            for item in items_response:
+                for photo_size in item["sizes"]:
+                    if photo_size["type"] == target_photo_size:
+                        photos_urls_lst.append(photo_size["url"])
 
-    def max_size_photo(self, sizes):
-        """Возвращает ссылку на фото с максимальным разрешением"""
-
-        # список копий фото от максимального к минимальному размеру
-        types = ["w", "z", "y", "r", "q", "p", "o", "x", "m", "s"]
-
-        for type in types:
-            for size in sizes:
-                if size["type"] == type:
-                    return size["url"], type
+            return photos_urls_lst
 
 
 if __name__ == "__main__":
-    vk_client = VKAPIclient(token)
+    vk_client = VKAPIclient(token, 827020295)
     vk_client.get_profile_info()
-    dump, yadisk = vk_client.get_profile_photos_data()
-    print(dump)
-    print("*" * 88)
-    print(yadisk)
+    vk_client.get_profile_photos_data()

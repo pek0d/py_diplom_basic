@@ -1,36 +1,101 @@
 # тест API яндекс-диск
+from configuration import YA_TOKEN
 import requests  # type: ignore
 import pprint
-from configuration import YA_TOKEN
+import pysnooper  # type: ignore
+import json
+import enlighten
+
+
+pp = pprint.PrettyPrinter(indent=2)
 
 token = YA_TOKEN
-headers_dict = {"Authorization": token}
-
-# создание папки на Яндекс диск
-params_dict = {"path": "pics_from_VK"}
-r = requests.put(
-    "https://cloud-api.yandex.net/v1/disk/resources",
-    params=params_dict,
-    headers=headers_dict,
-)
-# pprint.pprint(r.json())
 
 
-# Запрос адреса загрузки
-params_upload_dict = {"path": "pics_from_VK/bmwi7.jpg"}
-r = requests.get(
-    "https://cloud-api.yandex.net/v1/disk/resources/upload",
-    params=params_upload_dict,
-    headers=headers_dict,
-)
-pprint.pprint(r.json())
-url_for_upload = r.json()["href"]
+class YA_disk:
+    api_base_url = "https://cloud-api.yandex.net/v1/disk"
+
+    def __init__(self, token):
+        self.token = token
+        self.headers = {"Authorization": token}
+
+    def _build_url(self, api_method):
+        return f"{self.api_base_url}/{api_method}"
+
+    def _write_responses(self, response):
+        """Запись ответа в json"""
+        with open("response_info.json", "w") as f:
+            json.dump(response.json(), f, indent=2, ensure_ascii=False)
+
+    @pysnooper.snoop()
+    def create_upload_folder(self):
+        """Создание папки для загрузки"""
+        url = self._build_url("resources")
+        folder_name_input = input("Введите имя папки для загрузки: ")
+        self.dir_name = f"{folder_name_input}/"
+        params = {"path": folder_name_input}
+        response = requests.put(url, headers=self.headers, params=params)
+        if response.status_code == 201:
+            print(f"Папка с названием {folder_name_input} создана")
+        else:
+            print(response.json()["message"])
+
+        return self.dir_name
+
+    @pysnooper.snoop()
+    def upload_ext_url(self, url):
+        """Загрузить файл на диск с указанной (внешеней) ссылкой"""
+        url_for_upload = self._build_url("resources/upload")
+        path = self.dir_name
+        params = {"path": path, "url": url}
+        response = requests.put(
+            url_for_upload, headers=self.headers, params=params)
+        pp.pprint(response.json())
+        if response.status_code == 202:
+            print("Началась загрузка")
+        else:
+            print(response.json()["message"])
+
+        # response_status_uploading = requests.get(
+        #     self._build_url("operations") + "/" + response.json()["upload_id"]
+        # )
+        # print(response_status_uploading.json()["status"])
+        #
+        # @pysnooper.snoop()
+        # def get_upload_url(self, file_name):
+        #     """Получить ссылку на загрузку файла"""
+        #     url = self._build_url("resources/upload")
+        #     path = self.dir_name
+        #     params = {"path": f"{path}{file_name}", "overwrite": "true"}
+        #     response = requests.get(url, headers=self.headers, params=params)
+        #     if response.status_code == 200:
+        #         url_for_upload = response.json()["href"]
+        #         print(f"Ссылка для загрузки: {url_for_upload}")
+        #         self.url_for_upload = url_for_upload
+        #         return self.url_for_upload
+        #
+        #     else:
+        #         print(response.json()["message"])
+        #
+        #     # справочно
+        #     self._write_responses(response)
+        #
+        # @pysnooper.snoop()
+        # def upload_file(self, file_name):
+        #     """Загрузить файл на яндекс диск"""
+        #
+        #     href = self.url_for_upload
+        #     response = requests.put(href, data=open(file_name, "rb"))
+        #     response.raise_for_status()
+        #     if response.status_code == 201:
+        #         print("Файл загружен")
+        #     else:
+        #         print(response.json()["message"])
 
 
-# Загрузка файла
-with open("bmwi7.jpg", "rb") as f:
-    r_upload = requests.put(
-        url=url_for_upload,
-        files={"file": f},
+if __name__ == "__main__":
+    ya = YA_disk(token)
+    ya.create_upload_folder()
+    ya.upload_ext_url(
+        "https://sun9-23.userapi.com/impf/c210/v210001/6/53_VwoACy4I.jpg?size=2560x1913&quality=96&sign=c55f340348a35dd86542875a57ad8537&c_uniq_tag=RvD_7O5cznGnLGO2duPrnqHQrL-0KVHqGZMBe4FtTqI&type=album"
     )
-    pprint.pprint(r_upload)
