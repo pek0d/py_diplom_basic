@@ -28,7 +28,7 @@ class YA_disk:
         with open("response_info.json", "w") as f:
             json.dump(response.json(), f, indent=2, ensure_ascii=False)
 
-    @pysnooper.snoop()
+    # @pysnooper.snoop()
     def create_upload_folder(self):
         """Создание папки для загрузки"""
         # формирование ссылки для запроса
@@ -51,7 +51,7 @@ class YA_disk:
 
         return self.dir_name
 
-    @pysnooper.snoop()
+    # @pysnooper.snoop()
     def upload_ext_url(self, file_name, link2pic):
         """Загрузить файл на диск с указанной (внешеней) ссылкой"""
         # формирование ссылки для запроса
@@ -66,7 +66,6 @@ class YA_disk:
         )
         # проверка статуса запроса
         if response.status_code == 202:
-            print("Началась загрузка файла в папку на ЯндексДиск")
             with get_manager() as manager:
                 with manager.counter(
                     total=100, desc=f"Загрузка {file_name}", unit="%"
@@ -77,7 +76,7 @@ class YA_disk:
         else:
             print(response.json()["message"])
 
-    @pysnooper.snoop()
+    # @pysnooper.snoop()
     def upload_from_json(self):
         """Загрузить на Диск по ссылкам из json"""
         with open("for_upload_to_yadisk.json") as f:
@@ -92,9 +91,5 @@ if __name__ == "__main__":
     # ya.upload_ext_url(
     #     "test_pic.jpg",
     #     "https://bmwguide.ru/wp-content/uploads/2016/07/bmw-at-2016-consorso-d-eleganza-bmw-2002-hommage-13.jpg",
-    # )
-    # ya.upload_ext_url(
-    #     "peqqod.jpg",
-    #     "https://sun9-71.userapi.com/impg/QTDzCkn-PB52Nt-ZPGi8t6LTqBPphQRABjiE_Q/LYfVoc76twg.jpg?size=1024x819&quality=95&sign=b870aa2dfc821f4f2b9a2f3ae76155b3&c_uniq_tag=jzcIkvSKc_anAi8oV35XUjEqhyl_x3HxNUfdu_3ybZE&type=album",
     # )
     ya.upload_from_json()

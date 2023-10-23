@@ -3,7 +3,8 @@ import requests  # type: ignore
 import pprint
 import json
 import time
-import pysnooper
+
+# import pysnooper
 
 
 pp = pprint.PrettyPrinter(indent=2)
@@ -11,15 +12,12 @@ pp = pprint.PrettyPrinter(indent=2)
 
 token = VK_TOKEN
 
-# my id 827020295
-
 
 class VKAPIclient:
     api_base_url = "https://api.vk.com/method"
 
     def __init__(self, token):
         self.access_token = token
-        # self.user_id = user_id
 
     def _build_url(self, api_method):
         return f"{self.api_base_url}/{api_method}"
@@ -38,6 +36,7 @@ class VKAPIclient:
         params = self.common_params()
         params.update({"user_ids": user_id_input, "fields": "screen_name"})
         response = requests.get(user_url, params=params)
+        # проверка на ошибку
         if "error" in response.json().keys():
             error_message = response.json()["error"]["error_msg"]
             print(f"Произошла ошибка: {error_message}")
@@ -52,18 +51,35 @@ class VKAPIclient:
                 print(f'Короткого имени пользователя "{user_id_input}" нет.')
                 return self.user_id
 
-    @pysnooper.snoop()
+    # @pysnooper.snoop()
     def get_profile_photos_data(self):
         """Получить данные о фотографиях профиля"""
 
-        # список для записи в json
-        dump = []
-        # список для загрузки в яндекс диск
-        yadisk = []
-        # список для контроля повторных количеств лайков
-        uniq_name = []
-
+        # получение id профиля
         profile_id = self.user_id
+        # список данных для записи в output-json
+        dump = []
+        # список данных для загрузки в яндекс диск
+        yadisk = []
+        # список для выявления повторных количеств лайков
+        uniq_name = []
+        params = self.common_params()
+        params.update(
+            {
+                "owner_id": profile_id,
+                "album_id": "profile",
+                "photo_sizes": "1",
+                "extended": "1",
+            }
+        )
+        response = requests.get(self._build_url(
+            "photos.get"), params=params).json()
+        # проверка на доступ к альбому
+        try:
+            items_response = response["response"]["items"]
+        except KeyError:
+            print("Доступ к альбому данного пользователя закрыт")
+            exit(0)
         # ввод количества фото
         count_photos = input(
             "Сколько (По умолчанию 5) фото из аватарок профиля Вы хотите сохранить?: "
@@ -75,63 +91,50 @@ class VKAPIclient:
             count_photos = int(count_photos)
         except ValueError:
             print("Некорректное значение, нужно ввести число. Попробуйте еще раз")
-        params = self.common_params()
-        params.update(
-            {
-                "owner_id": profile_id,
-                "album_id": "profile",
-                "photo_sizes": "1",
-                "extended": "1",
-                "count": count_photos,
-            }
-        )
-        response = requests.get(self._build_url(
-            "photos.get"), params=params).json()
-        # проверка на доступ к альбому
-        try:
-            items_response = response["response"]["items"]
-        except KeyError:
-            print("Доступ к альбому данного пользователя закрыт")
         else:
+            params.update({"count": count_photos})
+            response = requests.get(self._build_url(
+                "photos.get"), params=params).json()
+            # ответ на запрос по информации для итерации
             items_response = response["response"]["items"]
 
-            # проебежка по лайкам
-            for item in items_response:
-                like = item["likes"]["count"]
-                like = str(like)
+        # проебежка по лайкам
+        for item in items_response:
+            like = item["likes"]["count"]
 
-                photo_upload_date = time.strftime(
-                    "%Y-%m-%d", time.gmtime(item["date"]))
+            photo_upload_date = time.strftime(
+                "%Y-%m-%d", time.gmtime(item["date"]))
 
-                # реализация условия для создания имени фото
-                if like in uniq_name:
-                    name = f"{like}_{photo_upload_date}.jpg"
-                else:
-                    name = f"{like}.jpg"
+            # реализация условия для создания имени фото
+            if like in uniq_name:
+                name = f"{like}_{photo_upload_date}.jpg"
+            else:
+                name = f"{like}.jpg"
 
-                if like not in uniq_name:
-                    uniq_name.append(like)
+            if like not in uniq_name:
+                uniq_name.append(like)
 
-                # формирование ссылки для запроса фото
-                max_photo_url, size = self.max_size_photo(item["sizes"])
+            # формирование ссылки для запроса фото
+            max_photo_url, size = self.max_size_photo(item["sizes"])
 
-                # формирование словаря для записи в список копий фото
-                data_dump = {"file_name": name, "size": size}
+            # формирование словаря для записи в список копий фото
+            data_dump = {"file_name": name, "size": size}
 
-                # формирование словаря для загрузки в яндекс диск
-                data_yadisk = {"file_name": name,
-                               "size": size, "url": max_photo_url}
+            # формирование словаря для загрузки в яндекс диск
+            data_yadisk = {"file_name": name,
+                           "size": size, "url": max_photo_url}
 
-                # наполнение списков
-                dump.append(data_dump)
-                yadisk.append(data_yadisk)
+            # наполнение списков
+            dump.append(data_dump)
+            yadisk.append(data_yadisk)
 
-                # запись в json
-                with open("photos_info.json", "w") as f:
-                    json.dump(dump, f, indent=2)
-                # запись в файл для яндексДиска
-                with open("for_upload_to_yadisk.json", "w") as f:
-                    json.dump(yadisk, f, indent=2)
+            # запись в output json
+            with open("photos_info.json", "w") as f:
+                json.dump(dump, f, indent=2)
+
+            # запись в json-файл для яндексДиска
+            with open("for_upload_to_yadisk.json", "w") as f:
+                json.dump(yadisk, f, indent=2)
 
         return dump, yadisk
 
@@ -141,6 +144,7 @@ class VKAPIclient:
         # список копий фото от максимального к минимальному размеру
         types = ["w", "z", "y", "r", "q", "p", "o", "x", "m", "s"]
 
+        # выбор максимального размера по типу, и получение ссылки на фото
         for type in types:
             for size in sizes:
                 if size["type"] == type:
@@ -152,5 +156,5 @@ if __name__ == "__main__":
     vk_client.get_profile_info()
     dump, yadisk = vk_client.get_profile_photos_data()
     print(dump)
-    print("*" * 88)
+    print("*" * 82)
     print(yadisk)
