@@ -4,3 +4,6 @@ ya_disk_token.md
 /venv
 /__pycache__
 configuration.py
+for_upload_to_yadisk.json
+photos_info.json
+response_info.json
