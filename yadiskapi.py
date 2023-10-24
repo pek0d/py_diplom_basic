@@ -59,6 +59,7 @@ class YA_disk:
         # объявление имени папки из ранее заданного имени
         folder = f"{self.dir_name}"
         params = {"path": f"disk:/{folder}/{file_name}", "url": link2pic}
+        # кодирование параметров согласно требованию документации Яндекса
         encoded_params = urlencode(params)
         # запрос на загрузку c помощью POST
         response = requests.post(
@@ -66,6 +67,7 @@ class YA_disk:
         )
         # проверка статуса запроса
         if response.status_code == 202:
+            # начало работы статус-бара
             with get_manager() as manager:
                 with manager.counter(
                     total=100, desc=f"Загрузка {file_name}", unit="%"
@@ -73,6 +75,10 @@ class YA_disk:
                     for _ in range(100):
                         time.sleep(0.05)
                         pbar.update()
+                print(
+                    "Список загруженных копий фото содержится в файле photos_info.json"
+                )
+
         else:
             print(response.json()["message"])
 

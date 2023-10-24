@@ -4,7 +4,7 @@ import pprint
 import json
 import time
 
-# import pysnooper
+import pysnooper
 
 
 pp = pprint.PrettyPrinter(indent=2)
@@ -128,13 +128,17 @@ class VKAPIclient:
             dump.append(data_dump)
             yadisk.append(data_yadisk)
 
-            # запись в output json
-            with open("photos_info.json", "w") as f:
-                json.dump(dump, f, indent=2)
+        # # запись в output json
+        # with open("photos_info.json", "w") as f:
+        #     json.dump(dump, f, indent=2)
+        #
+        # # запись в json-файл для яндексДиска
+        # with open("for_upload_to_yadisk.json", "w") as f:
+        #     json.dump(yadisk, f, indent=2)
 
-            # запись в json-файл для яндексДиска
-            with open("for_upload_to_yadisk.json", "w") as f:
-                json.dump(yadisk, f, indent=2)
+        # запись в файл для яндексДиска
+        write_data_to_json("photos_info.json", dump)
+        write_data_to_json("for_upload_to_yadisk.json", yadisk)
 
         return dump, yadisk
 
@@ -151,10 +155,16 @@ class VKAPIclient:
                     return size["url"], type
 
 
+def write_data_to_json(file, data):
+    """Запись данных в json"""
+    with open(file, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 if __name__ == "__main__":
     vk_client = VKAPIclient(token)
     vk_client.get_profile_info()
     dump, yadisk = vk_client.get_profile_photos_data()
-    print(dump)
-    print("*" * 82)
-    print(yadisk)
+    # print(dump)
+    # print("*" * 82)
+    # print(yadisk)
