@@ -7,3 +7,5 @@ configuration.py
 for_upload_to_yadisk.json
 photos_info.json
 response_info.json
+.ipynb_checkpoints
+for_upload_to_yadisk.json photos_info.json response_info.json
