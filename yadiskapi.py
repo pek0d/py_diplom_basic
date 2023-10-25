@@ -1,11 +1,10 @@
 from configuration import CLIENT_ID_YA_APP, CLIENT_YA_APP_SECRET
 import requests  # type: ignore
 import pprint
-import pysnooper  # type: ignore
 import json
 import time
+import sys
 from urllib.parse import urlencode
-from enlighten import get_manager  # type: ignore
 import base64
 import webbrowser
 
@@ -23,23 +22,32 @@ class YA_disk:
         self.client_id = client_id
         self.client_secret = client_secret
 
-    def _build_url(self, api_method):
-        """Собрать ссылку на API"""
+    def _build_url(self, api_method) -> str:
+        """Формирование ссылки на API"""
+
         return f"{self.api_base_url}/{api_method}"
 
-    def _write_responses(self, response):
-        """Запись ответа в json"""
+    def _write_responses(self, response) -> None:
+        """Запись ответа в json для отладки"""
+
         with open("response_info.json", "w") as f:
             json.dump(response.json(), f, indent=2, ensure_ascii=False)
 
-    def request_confirm_code(self):
+    def request_confirm_code(self) -> None:
         """Получение кода подтверждения от пользователя"""
+
         redirect_uri = "https://oauth.yandex.ru/verification_code"
         url_to_get_code = f"https://oauth.yandex.ru/authorize?response_type=code&client_id={client_id}&{redirect_uri}"
+        user_warning = """Через 5 секунд откроется вкладка для запроса
+        разрешения к Вашему ЯндексДиску."""
+        print(user_warning)
+        # ожидание 5 секунд пока пользователь осознает
+        time.sleep(5)
         webbrowser.open(url_to_get_code)
 
     def request_token_with_code(self) -> str:
         """Получение токена для доступа к API на основе кода подтверждения"""
+
         # формирование заголовков
         client_credentials = f"{self.client_id}:{self.client_secret}"
         encoded_client_credentials = base64.b64encode(
@@ -70,6 +78,7 @@ class YA_disk:
 
     def create_upload_folder(self) -> str:
         """Создание папки для загрузки"""
+
         url = self._build_url("resources")
         # формирование параметров запроса
         folder_name = input("Введите имя папки для загрузки: ")
@@ -89,9 +98,9 @@ class YA_disk:
 
         return self.dir_name
 
-    # @pysnooper.snoop()
-    def upload_ext_url(self, file_name: str, link2pic: str):
-        """Загрузить файл на диск с указанной (внешеней) ссылкой"""
+    def upload_ext_url(self, file_name: str, link2pic: str) -> None:
+        """Загрузить файл на диск с указанной(внешеней) ссылкой"""
+
         url_for_upload = self._build_url("resources/upload")
         # объявление имени папки из ранее заданного имени
         folder = self.dir_name
@@ -106,27 +115,30 @@ class YA_disk:
         )
         # проверка статуса запроса
         if response.status_code == 202:
-            # начало работы статус-бара
-            with get_manager() as manager:
-                with manager.counter(
-                    total=100, desc=f"Загрузка {file_name}", unit="%"
-                ) as pbar:
-                    for _ in range(100):
-                        time.sleep(0.05)
-                        pbar.update()
-            print(
-                """Список загруженных копий фото содержится в файле\nphotos_info.json"""
-            )
-
+            # прогресс-бар
+            num_list = [_ for _ in range(1, 101)]
+            for _, num in enumerate(num_list):
+                sim_bar(_ + 1, len(num_list), bar_length=30)
+                time.sleep(0.05)
         else:
             print(response.json()["message"])
 
-    def upload_from_json(self):
+    def upload_from_json(self) -> None:
         """Загрузить на Диск по ссылкам из json"""
         with open("for_upload_to_yadisk.json") as f:
             data = json.load(f)
             for photo_url in data:
                 self.upload_ext_url(photo_url["file_name"], photo_url["url"])
+
+
+def sim_bar(iteration: int, total: list, bar_length: int = 50) -> None:
+    """Функция для вывода прогресс-бара"""
+
+    progress = iteration / total
+    arrow = "🤡" * int(round(bar_length * progress))
+    spaces = " " * (bar_length - len(arrow))
+    sys.stdout.write(f"\r[{arrow}{spaces}] {int(progress * 100)}%")
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
