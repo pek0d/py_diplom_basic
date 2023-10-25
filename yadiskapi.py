@@ -31,7 +31,7 @@ class YA_disk:
             json.dump(response.json(), f, indent=2, ensure_ascii=False)
 
     @pysnooper.snoop()
-    def request_confirmantion_code(self):
+    def request_confirm_code(self):
         """Получение кода подтверждения от пользователя"""
         url = "https://oauth.yandex.ru/authorize?response_type=code"
         params = {"client_id": client_id}
@@ -42,13 +42,12 @@ class YA_disk:
     def request_token(self):
         """Получение токена для доступа к API"""
         code = input("Введите код подтверждения из браузера: ")
-        params = {
+        data = {
             "grant_type": "authorization_code",
             "code": code,
         }
-        encoded_params = urlencode(params)
-        response = requests.post(
-            "https://oauth.yandex.ru/", params=encoded_params)
+        payload = urlencode(data)
+        response = requests.post("https://oauth.yandex.ru/", data=payload)
         if response.status_code == 200:
             self.user_access_token = response.json()["access_token"]
         else:
@@ -120,7 +119,7 @@ class YA_disk:
 
 if __name__ == "__main__":
     ya = YA_disk(token)
-    ya.request_confirmantion_code()
+    # ya.request_confirm_code()
     ya.request_token()
     # ya.create_upload_folder()
     # ya.upload_from_json()
