@@ -91,6 +91,7 @@ class VKAPIclient:
             count_photos = int(count_photos)
         except ValueError:
             print("Некорректное значение, нужно ввести число. Попробуйте еще раз")
+            return self.get_profile_photos_data()
         else:
             params.update({"count": count_photos})
             response = requests.get(self._build_url(
@@ -102,6 +103,7 @@ class VKAPIclient:
         for item in items_response:
             like = item["likes"]["count"]
 
+            # формирование даты загрузки
             photo_upload_date = time.strftime(
                 "%Y-%m-%d", time.gmtime(item["date"]))
 
@@ -127,14 +129,6 @@ class VKAPIclient:
             # наполнение списков
             dump.append(data_dump)
             yadisk.append(data_yadisk)
-
-        # # запись в output json
-        # with open("photos_info.json", "w") as f:
-        #     json.dump(dump, f, indent=2)
-        #
-        # # запись в json-файл для яндексДиска
-        # with open("for_upload_to_yadisk.json", "w") as f:
-        #     json.dump(yadisk, f, indent=2)
 
         # запись в файл для яндексДиска
         write_data_to_json("photos_info.json", dump)
@@ -165,6 +159,3 @@ if __name__ == "__main__":
     vk_client = VKAPIclient(token)
     vk_client.get_profile_info()
     dump, yadisk = vk_client.get_profile_photos_data()
-    # print(dump)
-    # print("*" * 82)
-    # print(yadisk)

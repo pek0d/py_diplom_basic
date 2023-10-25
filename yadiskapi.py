@@ -1,15 +1,17 @@
-from configuration import YA_TOKEN
+from configuration import YA_TOKEN, CLIENT_ID_YA_APP
 import requests  # type: ignore
 import pprint
 import pysnooper  # type: ignore
 import json
 import time
 from urllib.parse import urlencode
-from enlighten import get_manager
+from enlighten import get_manager  # type: ignore
+import webbrowser
 
 pp = pprint.PrettyPrinter(indent=2)
 
 token = YA_TOKEN
+client_id = CLIENT_ID_YA_APP
 
 
 class YA_disk:
@@ -28,7 +30,32 @@ class YA_disk:
         with open("response_info.json", "w") as f:
             json.dump(response.json(), f, indent=2, ensure_ascii=False)
 
-    # @pysnooper.snoop()
+    @pysnooper.snoop()
+    def request_confirmantion_code(self):
+        """Получение кода подтверждения от пользователя"""
+        url = "https://oauth.yandex.ru/authorize?response_type=code"
+        params = {"client_id": client_id}
+        response = requests.get(url, params=params)
+        webbrowser.open(response.url)
+
+    @pysnooper.snoop()
+    def request_token(self):
+        """Получение токена для доступа к API"""
+        code = input("Введите код подтверждения из браузера: ")
+        params = {
+            "grant_type": "authorization_code",
+            "code": code,
+        }
+        encoded_params = urlencode(params)
+        response = requests.post(
+            "https://oauth.yandex.ru/", params=encoded_params)
+        if response.status_code == 200:
+            self.user_access_token = response.json()["access_token"]
+        else:
+            print(response.json()["error_description"])
+
+        return self.user_access_token
+
     def create_upload_folder(self):
         """Создание папки для загрузки"""
         # формирование ссылки для запроса
@@ -75,9 +102,9 @@ class YA_disk:
                     for _ in range(100):
                         time.sleep(0.05)
                         pbar.update()
-                print(
-                    "Список загруженных копий фото содержится в файле photos_info.json"
-                )
+            print(
+                """Список загруженных копий фото содержится в файле\nphotos_info.json"""
+            )
 
         else:
             print(response.json()["message"])
@@ -93,9 +120,7 @@ class YA_disk:
 
 if __name__ == "__main__":
     ya = YA_disk(token)
-    ya.create_upload_folder()
-    # ya.upload_ext_url(
-    #     "test_pic.jpg",
-    #     "https://bmwguide.ru/wp-content/uploads/2016/07/bmw-at-2016-consorso-d-eleganza-bmw-2002-hommage-13.jpg",
-    # )
-    ya.upload_from_json()
+    ya.request_confirmantion_code()
+    ya.request_token()
+    # ya.create_upload_folder()
+    # ya.upload_from_json()
