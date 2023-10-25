@@ -1,4 +1,12 @@
-requests
-enlighten
-urllib3
-pysnooper
+blessed==1.20.0
+certifi==2023.7.22
+charset-normalizer==3.3.1
+enlighten==1.12.0
+idna==3.4
+prefixed==0.7.0
+PySnooper==1.2.0
+requests==2.31.0
+setuptools==68.2.2
+six==1.16.0
+urllib3==2.0.7
+wcwidth==0.2.8

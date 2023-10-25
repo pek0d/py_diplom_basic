@@ -1,5 +1,4 @@
-from configuration import VK_TOKEN  # YA_TOKEN
-
+from configuration import VK_TOKEN
 from vkapiclient import VKAPIclient
 from yadiskapi import YA_disk
 
@@ -11,7 +10,6 @@ def user_interactive():
         "Добро пожаловать в программу по сбору и передаче копий фото из VK в Яндекс Диск!\n"
     )
     print("Выберите действие: ")
-
     menu_item = input(
         """-*- Для продолжения - нажмите 1\n-*- Для выхода - нажмите 2\n"""
     )
@@ -21,10 +19,10 @@ def user_interactive():
         vk.get_profile_info()
         vk.get_profile_photos_data()
 
-        # запрос пользовательского токена
-        user_ya_token = input("Введите Ваш токен Яндекс Диска: ")
-        ya = YA_disk(user_ya_token)
-
+        # вызов методов класса YA_disk
+        ya = YA_disk()
+        ya.request_confirm_code()
+        ya.request_token_with_code()
         ya.create_upload_folder()
         ya.upload_from_json()
 
