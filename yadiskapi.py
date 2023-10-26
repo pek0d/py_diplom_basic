@@ -38,12 +38,14 @@ class YA_disk:
 
         redirect_uri = "https://oauth.yandex.ru/verification_code"
         url_to_get_code = f"https://oauth.yandex.ru/authorize?response_type=code&client_id={client_id}&{redirect_uri}"
-        user_warning = """Через 5 секунд откроется вкладка для запроса
-        разрешения к Вашему ЯндексДиску."""
-        print(user_warning)
-        # ожидание 5 секунд пока пользователь осознает
-        time.sleep(5)
-        webbrowser.open(url_to_get_code)
+        user_input = input(
+            "Для предоставления доступа к Вашему ЯндексДиску вам необходимо ввести код из браузера. Продолжить? (y/n)"
+        )
+        if user_input in ["y", "yes", "да", "д", "Y"]:
+            webbrowser.open(url_to_get_code)
+        else:
+            print("До свидания!")
+            exit(0)
 
     def request_token_with_code(self) -> str:
         """Получение токена для доступа к API на основе кода подтверждения"""
