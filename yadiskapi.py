@@ -115,29 +115,24 @@ class YA_disk:
             headers={"Authorization": f"{self.user_access_token}"},
             params=encoded_params,
         )
-        # проверка статуса запроса
-        if response.status_code == 202:
-            # прогресс-бар
-            num_list = [_ for _ in range(1, 101)]
-            for _, num in enumerate(num_list):
-                sim_bar(_ + 1, len(num_list), bar_length=30)
-                time.sleep(0.05)
-        else:
-            print(response.json()["message"])
 
     def upload_from_json(self) -> None:
         """Загрузить на Диск по ссылкам из json"""
         with open("for_upload_to_yadisk.json") as f:
             data = json.load(f)
-            for photo_url in data:
+            for _, photo_url in enumerate(data):
+                sim_bar(_, data, bar_length=30)
+                time.sleep(0.05)
                 self.upload_ext_url(photo_url["file_name"], photo_url["url"])
 
 
-def sim_bar(iteration: int, total: list, bar_length: int = 50) -> None:
+def sim_bar(
+    iteration: int, total: list, bar_length: int = 50, symbol: str = "🟦"
+) -> None:
     """Функция для вывода прогресс-бара"""
-
-    progress = iteration / total
-    arrow = "🤡" * int(round(bar_length * progress))
+    total = len(total)
+    progress = (iteration + 1) / total
+    arrow = symbol * int(round(bar_length * progress))
     spaces = " " * (bar_length - len(arrow))
     sys.stdout.write(f"\r[{arrow}{spaces}] {int(progress * 100)}%")
     sys.stdout.flush()
