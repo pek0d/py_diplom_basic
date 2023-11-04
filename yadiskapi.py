@@ -120,6 +120,7 @@ class YA_disk:
 
     def upload_from_json(self) -> None:
         """Загрузить на Диск по ссылкам из json"""
+
         with open("for_upload_to_yadisk.json") as f:
             data = json.load(f)
             for _, photo_url in enumerate(data):
