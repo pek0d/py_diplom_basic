@@ -1,6 +1,7 @@
-from configuration import VK_TOKEN
 from vkapiclient import VKAPIclient
 from yadiskapi import YA_disk
+
+from configuration import VK_TOKEN
 
 
 def user_interactive() -> None:

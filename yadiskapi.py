@@ -1,12 +1,14 @@
-from configuration import CLIENT_ID_YA_APP, CLIENT_YA_APP_SECRET
+from urllib.parse import urlencode
+
 import requests  # type: ignore
 import pprint
 import json
 import time
 import sys
-from urllib.parse import urlencode
 import base64
 import webbrowser
+
+from configuration import CLIENT_ID_YA_APP, CLIENT_YA_APP_SECRET
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -130,6 +132,7 @@ def sim_bar(
     iteration: int, total: list, bar_length: int = 50, symbol: str = "🟦"
 ) -> None:
     """Функция для вывода прогресс-бара"""
+
     total = len(total)
     progress = (iteration + 1) / total
     arrow = symbol * int(round(bar_length * progress))

@@ -1,10 +1,9 @@
-from configuration import VK_TOKEN
 import requests  # type: ignore
 import pprint
 import json
 import time
 
-import pysnooper
+from configuration import VK_TOKEN
 
 
 pp = pprint.PrettyPrinter(indent=2)
@@ -24,13 +23,14 @@ class VKAPIclient:
 
     def common_params(self):
         """Подготовка параметров API"""
+
         return {"access_token": self.access_token, "v": "5.154"}
 
     def get_profile_info(self):
         """Получить данные о профиле пользователя"""
+
         user_url = f"{self.api_base_url}/users.get"
-        user_id_input = input(
-            "Введите id пользователя VK или его screen_name: ")
+        user_id_input = input("Введите id пользователя VK или его screen_name: ")
         if user_id_input == "":
             user_id_input = self.user_id
         params = self.common_params()
@@ -45,13 +45,11 @@ class VKAPIclient:
         else:
             self.user_id = response.json()["response"][0]["id"]
             if "screen_name" in response.json()["response"][0].keys():
-                self.screen_name = response.json(
-                )["response"][0]["screen_name"]
+                self.screen_name = response.json()["response"][0]["screen_name"]
             else:
                 print(f'Короткого имени пользователя "{user_id_input}" нет.')
                 return self.user_id
 
-    # @pysnooper.snoop()
     def get_profile_photos_data(self):
         """Получить данные о фотографиях профиля"""
 
@@ -72,8 +70,7 @@ class VKAPIclient:
                 "extended": "1",
             }
         )
-        response = requests.get(self._build_url(
-            "photos.get"), params=params).json()
+        response = requests.get(self._build_url("photos.get"), params=params).json()
         # проверка на доступ к альбому
         try:
             items_response = response["response"]["items"]
@@ -94,18 +91,15 @@ class VKAPIclient:
             return self.get_profile_photos_data()
         else:
             params.update({"count": count_photos})
-            response = requests.get(self._build_url(
-                "photos.get"), params=params).json()
             # ответ на запрос по информации для итерации
-            items_response = response["response"]["items"]
+            # items_response = response["response"]["items"]
 
-        # проебежка по лайкам
+        # пробежка по лайкам
         for item in items_response:
             like = item["likes"]["count"]
 
             # формирование даты загрузки
-            photo_upload_date = time.strftime(
-                "%Y-%m-%d", time.gmtime(item["date"]))
+            photo_upload_date = time.strftime("%Y-%m-%d", time.gmtime(item["date"]))
 
             # реализация условия для создания имени фото
             if like in uniq_name:
@@ -123,8 +117,7 @@ class VKAPIclient:
             data_dump = {"file_name": name, "size": size}
 
             # формирование словаря для загрузки в яндекс диск
-            data_yadisk = {"file_name": name,
-                           "size": size, "url": max_photo_url}
+            data_yadisk = {"file_name": name, "size": size, "url": max_photo_url}
 
             # наполнение списков
             dump.append(data_dump)
